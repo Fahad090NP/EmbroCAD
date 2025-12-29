@@ -1,36 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { config } from "./config/config";
 import "./App.css";
 
-// Thread colors - base color with calculated shadow
-const THREAD_COLORS = [
-  { r: 0, g: 0, b: 0 }, // Black
-  { r: 26, g: 26, b: 140 }, // Navy Blue
-  { r: 10, g: 95, b: 28 }, // Dark Green
-  { r: 140, g: 26, b: 26 }, // Dark Red
-  { r: 140, g: 26, b: 107 }, // Purple
-  { r: 92, g: 77, b: 26 }, // Brown
-  { r: 140, g: 140, b: 140 }, // Gray
-  { r: 77, g: 77, b: 77 }, // Dark Gray
-  { r: 51, g: 102, b: 204 }, // Blue
-  { r: 51, g: 204, b: 102 }, // Green
-  { r: 204, g: 51, b: 51 }, // Red
-  { r: 204, g: 102, b: 204 }, // Pink
-  { r: 204, g: 204, b: 51 }, // Yellow
-  { r: 230, g: 230, b: 230 }, // White
-  { r: 26, g: 26, b: 26 }, // Charcoal
-];
-
 // Create darker shade for 3D effect
-const darkenColor = (r: number, g: number, b: number, factor = 0.5) => {
-  return `rgb(${Math.floor(r * factor)}, ${Math.floor(
-    g * factor
-  )}, ${Math.floor(b * factor)})`;
+const darkenColor = (r: number, g: number, b: number, factor: number) => {
+  return `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
 };
 
 // Create lighter shade for highlight
-const lightenColor = (r: number, g: number, b: number, factor = 0.3) => {
+const lightenColor = (r: number, g: number, b: number, factor: number) => {
   return `rgb(${Math.floor(r + (255 - r) * factor)}, ${Math.floor(
     g + (255 - g) * factor
   )}, ${Math.floor(b + (255 - b) * factor)})`;
@@ -72,12 +52,9 @@ const drawStitch = (
   colorIdx: number,
   threadWidth: number
 ) => {
-  const color = THREAD_COLORS[colorIdx % THREAD_COLORS.length];
-  const mainColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-  const shadowColor = darkenColor(color.r, color.g, color.b, 0.4);
-  const highlightColor = lightenColor(color.r, color.g, color.b, 0.4);
+  const color = config.colors[colorIdx % config.colors.length];
 
-  // Calculate perpendicular offset for shadow/highlight
+  // Calculate stitch direction
   const dx = x2 - x1;
   const dy = y2 - y1;
   const len = Math.sqrt(dx * dx + dy * dy);
@@ -87,34 +64,38 @@ const drawStitch = (
   const px = -dy / len;
   const py = dx / len;
 
-  // Shadow offset (about 30% of thread width)
-  const shadowOffset = threadWidth * 0.3;
+  // Colors: main, subtle shadow, subtle highlight
+  const main = `rgb(${color.r}, ${color.g}, ${color.b})`;
+  const shadow = darkenColor(color.r, color.g, color.b, 0.6);
+  const highlight = lightenColor(color.r, color.g, color.b, 0.35);
 
-  // Draw shadow stroke (darker, offset down-right)
-  ctx.beginPath();
-  ctx.moveTo(x1 + px * shadowOffset, y1 + py * shadowOffset);
-  ctx.lineTo(x2 + px * shadowOffset, y2 + py * shadowOffset);
-  ctx.strokeStyle = shadowColor;
-  ctx.lineWidth = threadWidth;
+  // Small offset for depth
+  const offset = threadWidth * 0.25;
+
   ctx.lineCap = "round";
+
+  // Layer 1: Subtle shadow (slightly offset)
+  ctx.beginPath();
+  ctx.moveTo(x1 + px * offset, y1 + py * offset);
+  ctx.lineTo(x2 + px * offset, y2 + py * offset);
+  ctx.strokeStyle = shadow;
+  ctx.lineWidth = threadWidth;
   ctx.stroke();
 
-  // Draw main stroke
+  // Layer 2: Main thread
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
-  ctx.strokeStyle = mainColor;
+  ctx.strokeStyle = main;
   ctx.lineWidth = threadWidth;
-  ctx.lineCap = "round";
   ctx.stroke();
 
-  // Draw highlight (lighter, offset up-left, thinner)
+  // Layer 3: Thin highlight line
   ctx.beginPath();
-  ctx.moveTo(x1 - px * shadowOffset * 0.5, y1 - py * shadowOffset * 0.5);
-  ctx.lineTo(x2 - px * shadowOffset * 0.5, y2 - py * shadowOffset * 0.5);
-  ctx.strokeStyle = highlightColor;
-  ctx.lineWidth = threadWidth * 0.3;
-  ctx.lineCap = "round";
+  ctx.moveTo(x1 - px * offset * 0.4, y1 - py * offset * 0.4);
+  ctx.lineTo(x2 - px * offset * 0.4, y2 - py * offset * 0.4);
+  ctx.strokeStyle = highlight;
+  ctx.lineWidth = threadWidth * 0.25;
   ctx.stroke();
 };
 
@@ -137,31 +118,28 @@ function App() {
     const patternHeight = max_y - min_y;
 
     // Calculate scale to fit viewport
-    const padding = 50;
-    const maxSize = Math.min(
-      window.innerWidth - 100,
-      window.innerHeight - 100,
-      1200
-    );
+    const { padding, maxSize, backgroundColor } = config.canvas;
+    const viewportMax = Math.min(window.innerWidth - 100, window.innerHeight - 100, maxSize);
     const scale = Math.min(
-      (maxSize - padding * 2) / patternWidth,
-      (maxSize - padding * 2) / patternHeight
+      (viewportMax - padding * 2) / patternWidth,
+      (viewportMax - padding * 2) / patternHeight
     );
 
     // Set canvas size
     canvas.width = patternWidth * scale + padding * 2;
     canvas.height = patternHeight * scale + padding * 2;
 
-    // Clear canvas with white background
-    ctx.fillStyle = "#ffffff";
+    // Clear canvas with background color
+    ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Coordinate transforms
     const tx = (x: number) => (x - min_x) * scale + padding;
     const ty = (y: number) => (y - min_y) * scale + padding;
 
-    // Thread width based on scale (realistic thickness)
-    const threadWidth = Math.max(1.5, Math.min(3, scale * 0.8));
+    // Thread width based on scale (clamped to min/max)
+    const { width, minWidth, maxWidth } = config.thread;
+    const threadWidth = Math.max(minWidth, Math.min(maxWidth, scale * width * 0.4));
 
     // Track state
     let colorIdx = 0;
@@ -207,8 +185,9 @@ function App() {
   }, []);
 
   const loadFile = useCallback(async (filePath: string) => {
-    if (!filePath.toLowerCase().endsWith(".dst")) {
-      setError("Please drop a .DST file");
+    const ext = filePath.toLowerCase().slice(filePath.lastIndexOf("."));
+    if (!(config.formats.supported as readonly string[]).includes(ext)) {
+      setError(`Unsupported format. Supported: ${config.formats.supported.join(", ")}`);
       setState("error");
       return;
     }
@@ -238,16 +217,11 @@ function App() {
     const unlistenHover = listen<{ paths: string[] }>("tauri://drag-over", () =>
       setIsDragging(true)
     );
-    const unlistenLeave = listen("tauri://drag-leave", () =>
-      setIsDragging(false)
-    );
-    const unlistenDrop = listen<{ paths: string[] }>(
-      "tauri://drag-drop",
-      (e) => {
-        setIsDragging(false);
-        if (e.payload.paths?.[0]) loadFile(e.payload.paths[0]);
-      }
-    );
+    const unlistenLeave = listen("tauri://drag-leave", () => setIsDragging(false));
+    const unlistenDrop = listen<{ paths: string[] }>("tauri://drag-drop", (e) => {
+      setIsDragging(false);
+      if (e.payload.paths?.[0]) loadFile(e.payload.paths[0]);
+    });
 
     return () => {
       unlistenHover.then((fn) => fn());
@@ -266,11 +240,7 @@ function App() {
     <div className={`app ${isDragging ? "dragging" : ""}`}>
       {state === "idle" && (
         <div className={`drop-zone ${isDragging ? "dragging" : ""}`}>
-          <img
-            src="/icons/upload.svg"
-            alt="Upload"
-            className="drop-zone-icon"
-          />
+          <img src="/icons/upload.svg" alt="Upload" className="drop-zone-icon" />
           <p className="drop-zone-text">Drop a DST file here</p>
           <p className="drop-zone-hint">Embroidery design will be previewed</p>
         </div>

@@ -3,10 +3,5 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "opener:default",
-    "fs:allow-read-file",
-    "fs:allow-read"
-  ]
+  "permissions": ["core:default", "opener:default", "fs:allow-read-file", "fs:allow-read"]
 }
