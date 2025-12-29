@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "embrocad",
+  "productName": "EmbroCAD",
   "version": "0.1.0",
   "identifier": "com.fahad.embrocad",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "embrocad",
-        "width": 800,
-        "height": 600
+        "title": "EmbroCAD",
+        "width": 1024,
+        "height": 768,
+        "resizable": true,
+        "fullscreen": false
       }
     ],
     "security": {
