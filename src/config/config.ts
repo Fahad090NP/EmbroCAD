@@ -3,7 +3,7 @@
 export const config = {
   // Thread rendering settings
   thread: {
-    width: 2.0, // Base thread width in pixels
+    width: 1.5, // Base thread width in pixels
     minWidth: 1.5, // Minimum thread width at small scales
     maxWidth: 4.0, // Maximum thread width at large scales
     shadowFactor: 0.4, // How dark the shadow is (0-1, lower = darker)

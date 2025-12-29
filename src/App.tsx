@@ -104,6 +104,7 @@ function App() {
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [error, setError] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
+  const [fileName, setFileName] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const renderPattern = useCallback((pattern: Pattern) => {
@@ -194,6 +195,10 @@ function App() {
 
     setState("loading");
 
+    // Extract file name from path
+    const name = filePath.split(/[\\/]/).pop() || filePath;
+    setFileName(name);
+
     try {
       const result = await invoke<Pattern>("parse_dst_file", {
         path: filePath,
@@ -253,10 +258,39 @@ function App() {
         </div>
       )}
 
-      {state === "preview" && (
-        <div className="canvas-container" onClick={resetToIdle}>
-          <canvas ref={canvasRef} className="stitch-canvas" />
-        </div>
+      {state === "preview" && pattern && (
+        <>
+          <div className="header-bar">
+            <span className="file-name">{fileName}</span>
+          </div>
+          <div className="canvas-container" onClick={resetToIdle}>
+            <canvas ref={canvasRef} className="stitch-canvas" />
+          </div>
+          <div className="status-bar">
+            <div className="status-item">
+              <span className="status-label">Colors</span>
+              <span className="status-value">
+                {pattern.metadata.color_count ?? pattern.color_changes + 1}
+              </span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Stitches</span>
+              <span className="status-value">
+                {pattern.metadata.stitch_count?.toLocaleString() ??
+                  pattern.stitches.length.toLocaleString()}
+              </span>
+            </div>
+            {pattern.bounds && (
+              <div className="status-item">
+                <span className="status-label">Dimensions</span>
+                <span className="status-value">
+                  {((pattern.bounds.max_x - pattern.bounds.min_x) / 254).toFixed(2)} ×{" "}
+                  {((pattern.bounds.max_y - pattern.bounds.min_y) / 254).toFixed(2)} in
+                </span>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {state === "error" && (
