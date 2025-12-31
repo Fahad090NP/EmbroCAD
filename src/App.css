@@ -311,7 +311,7 @@ body {
   margin-top: var(--spacing);
 }
 
-/* Loading Spinner */
+/* Loading State with Progress */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -320,19 +320,12 @@ body {
   gap: var(--spacing-lg);
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--accent-teal);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.progress-loader {
+  width: 200px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.progress-bar {
+  height: 6px;
 }
 
 .loading-text {

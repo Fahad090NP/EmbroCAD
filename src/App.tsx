@@ -14,8 +14,18 @@ import {
   ChevronLeft,
   ChevronRight,
   FileImage,
+  FolderOpen,
+  Info,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+  ContextMenuShortcut,
+} from "./components/ui/context-menu";
 import { SettingsDialog } from "./components/settings-dialog";
 import "./App.css";
 
@@ -76,7 +86,6 @@ function App() {
     { id: "1", name: "Empty", filePath: null, pattern: null },
   ]);
   const [activeTabId, setActiveTabId] = useState("1");
-  const [isLoading, setIsLoading] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -192,7 +201,9 @@ function App() {
     [tabs, activeTabId, checkTabsScroll]
   );
 
-  // Optimized pattern rendering
+  // Progressive pattern rendering - shows design building up
+  const renderPatternRef = useRef<number | null>(null);
+
   const renderPattern = useCallback((pattern: Pattern) => {
     const canvas = canvasRef.current;
     if (!canvas || !pattern.bounds) {
@@ -202,6 +213,12 @@ function App() {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;
+    }
+
+    // Cancel any ongoing render
+    if (renderPatternRef.current) {
+      cancelAnimationFrame(renderPatternRef.current);
+      renderPatternRef.current = null;
     }
 
     const { min_x, min_y, max_x, max_y } = pattern.bounds;
@@ -215,92 +232,111 @@ function App() {
 
     const containerWidth = container.clientWidth - 40;
     const containerHeight = container.clientHeight - 40;
-
     const scale = Math.min(containerWidth / patternWidth, containerHeight / patternHeight);
 
+    // Set canvas size immediately so user sees the canvas
     canvas.width = patternWidth * scale;
     canvas.height = patternHeight * scale;
 
-    ctx.fillStyle =
+    // Clear with background
+    const bgColor =
       getComputedStyle(document.documentElement).getPropertyValue("--canvas-bg").trim() ||
       "#1A1A1A";
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const threadWidth = Math.max(1.5, Math.min(4.0, scale * 1.5 * 0.4));
     const offset = threadWidth * 0.25;
-
     ctx.lineCap = "round";
 
+    const stitches = pattern.stitches;
+    const totalStitches = stitches.length;
+    const STITCHES_PER_FRAME = 8000; // Balanced: visible effect + reasonable speed
+
+    let currentIndex = 0;
     let colorIdx = 0;
     let prevX = 0;
     let prevY = 0;
     let hasStart = false;
 
-    const stitches = pattern.stitches;
-    const len = stitches.length;
+    const renderChunk = () => {
+      const endIndex = Math.min(currentIndex + STITCHES_PER_FRAME, totalStitches);
 
-    for (let i = 0; i < len; i++) {
-      const stitch = stitches[i];
-      const x = (stitch.x - min_x) * scale;
-      const y = (stitch.y - min_y) * scale;
+      for (let i = currentIndex; i < endIndex; i++) {
+        const stitch = stitches[i];
+        const x = (stitch.x - min_x) * scale;
+        const y = (stitch.y - min_y) * scale;
 
-      switch (stitch.command) {
-        case "STITCH":
-          if (hasStart) {
-            const dx = x - prevX;
-            const dy = y - prevY;
-            const segLen = Math.sqrt(dx * dx + dy * dy);
+        switch (stitch.command) {
+          case "STITCH":
+            if (hasStart) {
+              const dx = x - prevX;
+              const dy = y - prevY;
+              const segLen = Math.sqrt(dx * dx + dy * dy);
 
-            if (segLen >= 0.5) {
-              const px = -dy / segLen;
-              const py = dx / segLen;
+              if (segLen >= 0.5) {
+                const px = -dy / segLen;
+                const py = dx / segLen;
+                const c = COLORS[colorIdx % COLORS.length];
 
-              const c = COLORS[colorIdx % COLORS.length];
+                // Shadow
+                ctx.beginPath();
+                ctx.moveTo(prevX + px * offset, prevY + py * offset);
+                ctx.lineTo(x + px * offset, y + py * offset);
+                ctx.strokeStyle = `rgb(${(c[0] * 0.6) | 0},${(c[1] * 0.6) | 0},${(c[2] * 0.6) | 0})`;
+                ctx.lineWidth = threadWidth;
+                ctx.stroke();
 
-              // Shadow
-              ctx.beginPath();
-              ctx.moveTo(prevX + px * offset, prevY + py * offset);
-              ctx.lineTo(x + px * offset, y + py * offset);
-              ctx.strokeStyle = `rgb(${(c[0] * 0.6) | 0},${(c[1] * 0.6) | 0},${(c[2] * 0.6) | 0})`;
-              ctx.lineWidth = threadWidth;
-              ctx.stroke();
+                // Main
+                ctx.beginPath();
+                ctx.moveTo(prevX, prevY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+                ctx.lineWidth = threadWidth;
+                ctx.stroke();
 
-              // Main
-              ctx.beginPath();
-              ctx.moveTo(prevX, prevY);
-              ctx.lineTo(x, y);
-              ctx.strokeStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
-              ctx.lineWidth = threadWidth;
-              ctx.stroke();
-
-              // Highlight
-              ctx.beginPath();
-              ctx.moveTo(prevX - px * offset * 0.4, prevY - py * offset * 0.4);
-              ctx.lineTo(x - px * offset * 0.4, y - py * offset * 0.4);
-              ctx.strokeStyle = `rgb(${(c[0] + (255 - c[0]) * 0.35) | 0},${(c[1] + (255 - c[1]) * 0.35) | 0},${(c[2] + (255 - c[2]) * 0.35) | 0})`;
-              ctx.lineWidth = threadWidth * 0.25;
-              ctx.stroke();
+                // Highlight
+                ctx.beginPath();
+                ctx.moveTo(prevX - px * offset * 0.4, prevY - py * offset * 0.4);
+                ctx.lineTo(x - px * offset * 0.4, y - py * offset * 0.4);
+                ctx.strokeStyle = `rgb(${(c[0] + (255 - c[0]) * 0.35) | 0},${(c[1] + (255 - c[1]) * 0.35) | 0},${(c[2] + (255 - c[2]) * 0.35) | 0})`;
+                ctx.lineWidth = threadWidth * 0.25;
+                ctx.stroke();
+              }
             }
-          }
-          prevX = x;
-          prevY = y;
-          hasStart = true;
-          break;
-        case "MOVE":
-          prevX = x;
-          prevY = y;
-          hasStart = true;
-          break;
-        case "COLOR_CHANGE":
-          colorIdx++;
-          prevX = x;
-          prevY = y;
-          hasStart = true;
-          break;
-        case "END":
-          return;
+            prevX = x;
+            prevY = y;
+            hasStart = true;
+            break;
+          case "MOVE":
+            prevX = x;
+            prevY = y;
+            hasStart = true;
+            break;
+          case "COLOR_CHANGE":
+            colorIdx++;
+            prevX = x;
+            prevY = y;
+            hasStart = true;
+            break;
+          case "END":
+            renderPatternRef.current = null;
+            return;
+        }
       }
-    }
+
+      currentIndex = endIndex;
+
+      // Continue rendering if more stitches remain
+      if (currentIndex < totalStitches) {
+        renderPatternRef.current = requestAnimationFrame(renderChunk);
+      } else {
+        renderPatternRef.current = null;
+      }
+    };
+
+    // Start the progressive render
+    renderPatternRef.current = requestAnimationFrame(renderChunk);
   }, []);
 
   // Load file into current tab
@@ -317,7 +353,6 @@ function App() {
         return;
       }
 
-      setIsLoading(true);
       const fileName = filePath.split(/[\\/]/).pop() ?? "Untitled";
 
       try {
@@ -330,8 +365,6 @@ function App() {
         );
       } catch (err) {
         console.error(err);
-      } finally {
-        setIsLoading(false);
       }
     },
     [activeTabId, tabs]
@@ -354,8 +387,6 @@ function App() {
       const newId = Date.now().toString();
       const fileName = filePath.split(/[\\/]/).pop() ?? "Untitled";
 
-      setIsLoading(true);
-
       try {
         const pattern = await invoke<Pattern>("load_design", { path: filePath });
         const newTab = { id: newId, name: fileName, filePath: filePath, pattern };
@@ -372,8 +403,6 @@ function App() {
         setTimeout(checkTabsScroll, 100);
       } catch (err) {
         console.error(err);
-      } finally {
-        setIsLoading(false);
       }
     },
     [tabs, checkTabsScroll]
@@ -619,28 +648,39 @@ function App() {
       </div>
 
       {/* Canvas Area */}
-      <div
-        className={`canvas-area ${dragZone === "canvas" ? "drag-active" : ""}`}
-        onDoubleClick={!activeTab?.pattern ? handleOpenFile : undefined}
-      >
-        {isLoading ? (
-          <div className="loading-state">
-            <div className="spinner" />
-            <span className="loading-text">Loading embroidery file...</span>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div
+            className={`canvas-area ${dragZone === "canvas" ? "drag-active" : ""}`}
+            onDoubleClick={!activeTab?.pattern ? handleOpenFile : undefined}
+          >
+            {activeTab?.pattern ? (
+              <canvas ref={canvasRef} className="design-canvas" />
+            ) : (
+              <div className="empty-state">
+                <FileImage size={64} className="empty-state-icon" />
+                <span className="empty-state-title">No File Open</span>
+                <span className="empty-state-subtitle">
+                  Double-click here or drag and drop an embroidery file to get started
+                </span>
+                <span className="empty-state-hint">Supported: DST, PES, EXP, JEF, VP3</span>
+              </div>
+            )}
           </div>
-        ) : activeTab?.pattern ? (
-          <canvas ref={canvasRef} className="design-canvas" />
-        ) : (
-          <div className="empty-state">
-            <FileImage size={64} className="empty-state-icon" />
-            <span className="empty-state-title">No File Open</span>
-            <span className="empty-state-subtitle">
-              Double-click here or drag and drop an embroidery file to get started
-            </span>
-            <span className="empty-state-hint">Supported: DST, PES, EXP, JEF, VP3</span>
-          </div>
-        )}
-      </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-48">
+          <ContextMenuItem onClick={handleOpenFile}>
+            <FolderOpen className="mr-2 h-4 w-4" />
+            Open File
+            <ContextMenuShortcut>Ctrl+O</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem disabled>
+            <Info className="mr-2 h-4 w-4" />
+            About EmbroCAD
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </div>
   );
 }
