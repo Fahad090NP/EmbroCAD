@@ -238,12 +238,8 @@ function App() {
     canvas.width = patternWidth * scale;
     canvas.height = patternHeight * scale;
 
-    // Clear with background
-    const bgColor =
-      getComputedStyle(document.documentElement).getPropertyValue("--canvas-bg").trim() ||
-      "#1A1A1A";
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Clear canvas (transparent) to let CSS background show through
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const threadWidth = Math.max(1.5, Math.min(4.0, scale * 1.5 * 0.4));
     const offset = threadWidth * 0.25;

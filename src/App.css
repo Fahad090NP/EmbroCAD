@@ -35,8 +35,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 /* App Container */
@@ -45,9 +45,9 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-primary);
-  padding: var(--spacing);
-  gap: var(--spacing);
+  background-color: var(--background);
+  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
 }
 
 /* Title Bar */
@@ -55,8 +55,8 @@ body {
   display: flex;
   align-items: center;
   height: var(--btn-size);
-  gap: var(--spacing);
-  background-color: var(--bg-primary);
+  gap: var(--spacing-sm);
+  background-color: var(--background);
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
@@ -68,31 +68,31 @@ body {
   justify-content: center;
   width: var(--btn-size);
   height: var(--btn-size);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--border-radius);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   cursor: pointer;
   transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
 .title-btn:hover {
-  background-color: var(--hover-bg);
-  color: var(--text-primary);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 .title-btn.close-btn:hover {
-  background-color: var(--danger-bg);
-  border-color: var(--danger-color);
-  color: var(--danger-color);
+  background-color: var(--destructive);
+  border-color: var(--destructive);
+  color: var(--destructive-foreground);
 }
 
 /* Tabs Wrapper */
 .tabs-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--spacing);
+  gap: var(--spacing-sm);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -105,25 +105,25 @@ body {
   justify-content: center;
   width: 30px;
   height: var(--btn-size);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--border-radius-sm);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   cursor: pointer;
   transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
 .tabs-nav-btn:hover {
-  background-color: var(--hover-bg);
-  color: var(--text-primary);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 /* Tabs Container - scrollable */
 .tabs-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing);
+  gap: var(--spacing-sm);
   flex: 1;
   min-width: 0;
   overflow-x: auto;
@@ -140,15 +140,15 @@ body {
 .tab {
   display: flex;
   align-items: center;
-  gap: var(--spacing);
+  gap: var(--spacing-sm);
   height: var(--btn-size);
   min-width: var(--tab-width);
   max-width: var(--tab-width);
   padding: 0 var(--spacing-lg);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--border-radius);
   background: transparent;
-  color: var(--text-primary);
+  color: var(--foreground);
   cursor: pointer;
   transition: var(--transition-fast);
   font-size: 14px;
@@ -157,11 +157,14 @@ body {
 }
 
 .tab:hover {
-  background-color: var(--hover-bg-subtle);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 .tab.active {
-  background-color: var(--hover-bg);
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--primary);
 }
 
 .tab-name {
@@ -177,7 +180,7 @@ body {
   justify-content: center;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   cursor: pointer;
   padding: 2px;
   border-radius: var(--border-radius-xs);
@@ -186,7 +189,8 @@ body {
 }
 
 .tab-close:hover {
-  color: var(--text-primary);
+  color: var(--destructive);
+  background-color: var(--destructive-foreground);
 }
 
 .add-tab-btn {
@@ -196,22 +200,16 @@ body {
 /* Window Controls */
 .window-controls {
   display: flex;
-  gap: var(--spacing);
+  gap: var(--spacing-sm);
   flex-shrink: 0;
-}
-
-/* Minimize button - icon aligned to bottom */
-.minimize-btn {
-  align-items: flex-end;
-  padding-bottom: var(--spacing);
 }
 
 /* Canvas Area */
 .canvas-area {
   flex: 1;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--border-radius);
-  background-color: var(--canvas-bg);
+  background-color: var(--background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,7 +224,7 @@ body {
 }
 
 .loading-indicator {
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   font-size: 14px;
 }
 
@@ -237,8 +235,8 @@ body {
 
 /* Drag and Drop Visual Feedback */
 .canvas-area.drag-active {
-  border-color: var(--accent-teal);
-  background-color: var(--accent-teal-bg);
+  border-color: var(--primary);
+  background-color: var(--accent);
   box-shadow: inset 0 0 20px rgba(0, 128, 128, 0.1);
 }
 
@@ -247,15 +245,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing);
+  gap: var(--spacing-sm);
   height: var(--btn-size);
   min-width: var(--tab-width);
   max-width: var(--tab-width);
   padding: 0 var(--spacing-lg);
-  border: 2px dashed var(--accent-teal);
+  border: 2px dashed var(--primary);
   border-radius: var(--border-radius);
-  background-color: var(--accent-teal-bg);
-  color: var(--accent-teal);
+  background-color: var(--accent);
+  color: var(--primary);
   font-size: 14px;
   font-weight: 500;
   flex-shrink: 0;
@@ -284,7 +282,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-lg);
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   text-align: center;
   padding: 40px;
 }
@@ -296,7 +294,7 @@ body {
 .empty-state-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--foreground);
 }
 
 .empty-state-subtitle {
@@ -308,7 +306,7 @@ body {
 .empty-state-hint {
   font-size: 12px;
   opacity: 0.7;
-  margin-top: var(--spacing);
+  margin-top: var(--spacing-sm);
 }
 
 /* Loading State with Progress */
@@ -329,14 +327,14 @@ body {
 }
 
 .loading-text {
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   font-size: 14px;
 }
 
 /* Tab Close Button - Hover Red */
 .tab-close:hover {
-  color: var(--danger-color);
-  background-color: var(--danger-bg);
+  color: var(--destructive);
+  background-color: transparent;
 }
 
 /* Focus States for Accessibility */
@@ -344,7 +342,7 @@ body {
 .tabs-nav-btn:focus-visible,
 .tab:focus-visible,
 .tab-close:focus-visible {
-  outline: 2px solid var(--accent-teal);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
