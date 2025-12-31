@@ -56,19 +56,8 @@
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 }
 
-/*
-  Base Colors (Internal Reference):
-  Teal: 180 100% 25.1% (#008080)
-  Off White: 0 0% 97.6% (#f9f9f9)
-  Gray 50: 0 0% 96.1% (#f5f5f5)
-  Gray 300: 0 0% 83.1% (#d4d4d4) 
-  Gray 500: 0 0% 45.1% (#737373)
-  Gray 900: 0 0% 10.2% (#1a1a1a)
-  Red: 0 84.2% 60.2% (#ef4444)
-*/
-
 :root {
-  --radius: 0.625rem;
+  --radius: 10px;
 
   /* App Spacing */
   --spacing-sm: 5px;

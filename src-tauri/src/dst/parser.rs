@@ -98,6 +98,15 @@ fn parse_stitches(data: &[u8], pattern: &mut Pattern) -> Result<(), DstError> {
     let mut current_y = 0.0f64;
     let mut sequin_mode = false;
 
+    // Statistics counters
+    let mut real_stitches = 0;
+    let mut jumps = 0;
+    let mut color_changes = 0;
+
+    // Constants for time estimation
+    const MACHINE_SPEED_SPM: f64 = 800.0;
+    const COLOR_CHANGE_PENALTY_SECONDS: f64 = 15.0;
+
     loop {
         if cursor.read_exact(&mut buffer).is_err() {
             break;
@@ -121,6 +130,7 @@ fn parse_stitches(data: &[u8], pattern: &mut Pattern) -> Result<(), DstError> {
         // Color change (0xC3 pattern)
         else if b2 & 0b11000011 == 0b11000011 {
             pattern.add_stitch(current_x, current_y, StitchCommand::ColorChange);
+            color_changes += 1;
         }
         // Sequin mode toggle (0x43 pattern)
         else if b2 & 0b01000011 == 0b01000011 {
@@ -133,13 +143,26 @@ fn parse_stitches(data: &[u8], pattern: &mut Pattern) -> Result<(), DstError> {
                 pattern.add_stitch(current_x, current_y, StitchCommand::SequinEject);
             } else {
                 pattern.add_stitch(current_x, current_y, StitchCommand::Move);
+                jumps += 1;
             }
         }
         // Regular stitch
         else {
             pattern.add_stitch(current_x, current_y, StitchCommand::Stitch);
+            real_stitches += 1;
         }
     }
+
+    // Populate statistics
+    pattern.statistics.real_stitch_count = real_stitches;
+    pattern.statistics.jump_count = jumps;
+    pattern.statistics.color_change_count = color_changes;
+
+    // Calculate estimated time
+    let stitch_time_minutes = (real_stitches as f64) / MACHINE_SPEED_SPM;
+    let color_change_time_minutes = (color_changes as f64 * COLOR_CHANGE_PENALTY_SECONDS) / 60.0;
+
+    pattern.statistics.estimated_time_minutes = stitch_time_minutes + color_change_time_minutes;
 
     Ok(())
 }

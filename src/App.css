@@ -35,8 +35,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 /* App Container */
@@ -45,7 +45,7 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--background);
+  background-color: hsl(var(--background));
   padding: var(--spacing-sm);
   gap: var(--spacing-sm);
 }
@@ -56,7 +56,7 @@ body {
   align-items: center;
   height: var(--btn-size);
   gap: var(--spacing-sm);
-  background-color: var(--background);
+  background-color: hsl(var(--background));
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
@@ -68,24 +68,24 @@ body {
   justify-content: center;
   width: var(--btn-size);
   height: var(--btn-size);
-  border: 1px solid var(--border);
+  border: 1px solid hsl(var(--border));
   border-radius: var(--border-radius);
   background: transparent;
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
 .title-btn:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
 
 .title-btn.close-btn:hover {
-  background-color: var(--destructive);
-  border-color: var(--destructive);
-  color: var(--destructive-foreground);
+  background-color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
 }
 
 /* Tabs Wrapper */
@@ -105,18 +105,18 @@ body {
   justify-content: center;
   width: 30px;
   height: var(--btn-size);
-  border: 1px solid var(--border);
+  border: 1px solid hsl(var(--border));
   border-radius: var(--border-radius-sm);
   background: transparent;
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
 .tabs-nav-btn:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
 
 /* Tabs Container - scrollable */
@@ -145,10 +145,10 @@ body {
   min-width: var(--tab-width);
   max-width: var(--tab-width);
   padding: 0 var(--spacing-lg);
-  border: 1px solid var(--border);
+  border: 1px solid hsl(var(--border));
   border-radius: var(--border-radius);
   background: transparent;
-  color: var(--foreground);
+  color: hsl(var(--foreground));
   cursor: pointer;
   transition: var(--transition-fast);
   font-size: 14px;
@@ -157,14 +157,14 @@ body {
 }
 
 .tab:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
 
 .tab.active {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
-  border-color: var(--primary);
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border-color: hsl(var(--primary));
 }
 
 .tab-name {
@@ -180,7 +180,7 @@ body {
   justify-content: center;
   background: transparent;
   border: none;
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   padding: 2px;
   border-radius: var(--border-radius-xs);
@@ -189,8 +189,8 @@ body {
 }
 
 .tab-close:hover {
-  color: var(--destructive);
-  background-color: var(--destructive-foreground);
+  color: hsl(var(--destructive));
+  background-color: hsl(var(--destructive-foreground));
 }
 
 .add-tab-btn {
@@ -207,9 +207,9 @@ body {
 /* Canvas Area */
 .canvas-area {
   flex: 1;
-  border: 1px solid var(--border);
+  border: 1px solid hsl(var(--border));
   border-radius: var(--border-radius);
-  background-color: var(--background);
+  background-color: hsl(var(--background));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,7 +224,7 @@ body {
 }
 
 .loading-indicator {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-size: 14px;
 }
 
@@ -235,8 +235,8 @@ body {
 
 /* Drag and Drop Visual Feedback */
 .canvas-area.drag-active {
-  border-color: var(--primary);
-  background-color: var(--accent);
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--accent));
   box-shadow: inset 0 0 20px rgba(0, 128, 128, 0.1);
 }
 
@@ -250,10 +250,10 @@ body {
   min-width: var(--tab-width);
   max-width: var(--tab-width);
   padding: 0 var(--spacing-lg);
-  border: 2px dashed var(--primary);
+  border: 2px dashed hsl(var(--primary));
   border-radius: var(--border-radius);
-  background-color: var(--accent);
-  color: var(--primary);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--primary));
   font-size: 14px;
   font-weight: 500;
   flex-shrink: 0;
@@ -282,7 +282,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-lg);
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   text-align: center;
   padding: 40px;
 }
@@ -294,7 +294,7 @@ body {
 .empty-state-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--foreground);
+  color: hsl(var(--foreground));
 }
 
 .empty-state-subtitle {
@@ -327,13 +327,13 @@ body {
 }
 
 .loading-text {
-  color: var(--muted-foreground);
+  color: hsl(var(--muted-foreground));
   font-size: 14px;
 }
 
 /* Tab Close Button - Hover Red */
 .tab-close:hover {
-  color: var(--destructive);
+  color: hsl(var(--destructive));
   background-color: transparent;
 }
 
@@ -342,10 +342,43 @@ body {
 .tabs-nav-btn:focus-visible,
 .tab:focus-visible,
 .tab-close:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
 .tab:focus-visible {
   outline-offset: -2px;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
+  height: 28px;
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--border-radius);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-family: "Sora", sans-serif;
+  font-size: 13px;
+}
+
+.status-label {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  opacity: 0.8;
+}
+
+.status-value {
+  font-weight: 400;
+  color: hsl(var(--muted-foreground));
 }

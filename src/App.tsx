@@ -61,9 +61,17 @@ interface Bounds {
   max_y: number;
 }
 
+interface PatternStatistics {
+  real_stitch_count: number;
+  jump_count: number;
+  color_change_count: number;
+  estimated_time_minutes: number;
+}
+
 interface Pattern {
   stitches: Stitch[];
   bounds: Bounds | null;
+  statistics: PatternStatistics;
   color_changes: number;
   metadata: {
     label: string | null;
@@ -80,6 +88,25 @@ interface Tab {
 }
 
 const SUPPORTED_FORMATS = [".dst"];
+
+// Helper for formatting numbers with commas
+const NumberDisplay = ({ value }: { value: number }) => {
+  return <span>{value.toLocaleString()}</span>;
+};
+
+// Helper for formatting time
+const TimeDisplay = ({ minutes }: { minutes: number }) => {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  if (h > 0) {
+    return (
+      <span>
+        {h}h {m}m
+      </span>
+    );
+  }
+  return <span>{m}m</span>;
+};
 
 function App() {
   const [tabs, setTabs] = useState<Tab[]>([
@@ -677,6 +704,64 @@ function App() {
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
+
+      {/* Status Bar */}
+      <footer className="status-bar">
+        <div className="status-item">
+          <span className="status-label">Stitches:</span>
+          <span className="status-value">
+            <NumberDisplay
+              value={
+                activeTab?.pattern?.statistics?.real_stitch_count ??
+                activeTab?.pattern?.metadata?.stitch_count ??
+                0
+              }
+            />
+          </span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Colors:</span>
+          <span className="status-value">
+            <NumberDisplay
+              value={
+                activeTab?.pattern?.statistics?.color_change_count ??
+                activeTab?.pattern?.metadata?.color_count ??
+                0
+              }
+            />
+          </span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Time:</span>
+          <span className="status-value">
+            <TimeDisplay minutes={activeTab?.pattern?.statistics?.estimated_time_minutes ?? 0} />
+          </span>
+        </div>
+        {activeTab?.pattern?.bounds ? (
+          <div className="status-item">
+            <span className="status-label">Size:</span>
+            <span className="status-value">
+              {(
+                (activeTab.pattern.bounds.max_x - activeTab.pattern.bounds.min_x) *
+                0.1 *
+                0.0393701
+              ).toFixed(2)}
+              &quot; x{" "}
+              {(
+                (activeTab.pattern.bounds.max_y - activeTab.pattern.bounds.min_y) *
+                0.1 *
+                0.0393701
+              ).toFixed(2)}
+              &quot;
+            </span>
+          </div>
+        ) : (
+          <div className="status-item">
+            <span className="status-label">Size:</span>
+            <span className="status-value">0.00&quot; x 0.00&quot;</span>
+          </div>
+        )}
+      </footer>
     </div>
   );
 }

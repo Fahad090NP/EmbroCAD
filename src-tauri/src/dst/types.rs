@@ -94,12 +94,22 @@ impl Default for Bounds {
     }
 }
 
+/// Calculated statistics for the pattern
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct PatternStatistics {
+    pub real_stitch_count: u32,
+    pub jump_count: u32,
+    pub color_change_count: u32,
+    pub estimated_time_minutes: f64,
+}
+
 /// The complete embroidery pattern
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct Pattern {
     pub stitches: Vec<Stitch>,
     pub metadata: PatternMetadata,
     pub bounds: Option<Bounds>,
+    pub statistics: PatternStatistics,
     pub color_changes: u32,
 }
 
