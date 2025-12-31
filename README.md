@@ -2,6 +2,8 @@
 
 Embroidery design preview software built with Tauri, React, and Rust.
 
+![Demo Video](.github/assets/video.mp4)
+
 ## Features
 
 - **DST File Support** - Parse and render Tajima DST embroidery files
