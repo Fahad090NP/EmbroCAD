@@ -2,7 +2,7 @@
 
 Embroidery design preview software built with Tauri, React, and Rust.
 
-![Demo Video](.github/assets/video.mp4)
+![Demo](.github/assets/demo.png)
 
 ## Features
 
