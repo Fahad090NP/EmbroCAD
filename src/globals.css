@@ -77,6 +77,35 @@
   --sidebar-accent-foreground: #f9f9f9;
   --sidebar-border: #008080;
   --sidebar-ring: #008080;
+
+  /* App Spacing */
+  --spacing: 6px;
+  --spacing-sm: 4px;
+  --spacing-lg: 12px;
+
+  /* App Colors - Light Mode */
+  --bg-primary: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #737373;
+  --border-color: #d4d4d4;
+  --hover-bg: rgba(115, 115, 115, 0.1);
+  --hover-bg-subtle: rgba(115, 115, 115, 0.05);
+  --danger-color: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --accent-teal: #008080;
+  --accent-teal-bg: rgba(0, 128, 128, 0.1);
+  --accent-teal-border: rgba(0, 128, 128, 0.5);
+  --canvas-bg: #ffffff;
+
+  /* App Sizing */
+  --btn-size: 45px;
+  --tab-width: 160px;
+  --border-radius: 10px;
+  --border-radius-sm: 8px;
+  --border-radius-xs: 4px;
+
+  /* App Transitions */
+  --transition-fast: all 0.15s ease;
 }
 
 .dark {
@@ -111,6 +140,20 @@
   --sidebar-accent-foreground: #f9f9f9;
   --sidebar-border: #008080;
   --sidebar-ring: #008080;
+
+  /* App Colors - Dark Mode */
+  --bg-primary: #1a1a1a;
+  --text-primary: #f9f9f9;
+  --text-secondary: #a3a3a3;
+  --border-color: #525252;
+  --hover-bg: rgba(115, 115, 115, 0.15);
+  --hover-bg-subtle: rgba(115, 115, 115, 0.1);
+  --danger-color: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.2);
+  --accent-teal: #00a6a6;
+  --accent-teal-bg: rgba(0, 128, 128, 0.2);
+  --accent-teal-border: rgba(0, 166, 166, 0.6);
+  --canvas-bg: #1a1a1a;
 }
 
 @layer base {
