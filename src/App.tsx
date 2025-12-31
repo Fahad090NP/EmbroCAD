@@ -15,22 +15,28 @@ import {
   ChevronRight,
   FileImage,
 } from "lucide-react";
-import { config } from "./config/config";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip";
 import { SettingsDialog } from "./components/settings-dialog";
 import "./App.css";
 
-// Create darker shade for 3D effect
-const darkenColor = (r: number, g: number, b: number, factor: number) => {
-  return `rgb(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)})`;
-};
-
-// Create lighter shade for highlight
-const lightenColor = (r: number, g: number, b: number, factor: number) => {
-  return `rgb(${Math.floor(r + (255 - r) * factor)}, ${Math.floor(
-    g + (255 - g) * factor
-  )}, ${Math.floor(b + (255 - b) * factor)})`;
-};
+// Thread colors - inline for zero lookup overhead
+const COLORS = [
+  [0, 0, 0], // Black
+  [26, 26, 140], // Navy Blue
+  [10, 95, 28], // Dark Green
+  [140, 26, 26], // Dark Red
+  [140, 26, 107], // Purple
+  [92, 77, 26], // Brown
+  [140, 140, 140], // Gray
+  [77, 77, 77], // Dark Gray
+  [51, 102, 204], // Blue
+  [51, 204, 102], // Green
+  [204, 51, 51], // Red
+  [204, 102, 204], // Pink
+  [204, 204, 51], // Yellow
+  [230, 230, 230], // White
+  [26, 26, 26], // Charcoal
+];
 
 interface Stitch {
   x: number;
@@ -63,56 +69,7 @@ interface Tab {
   pattern: Pattern | null;
 }
 
-// Draw a single stitch with 3D thread effect
-const drawStitch = (
-  ctx: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  colorIdx: number,
-  threadWidth: number
-) => {
-  const color = config.colors[colorIdx % config.colors.length];
-
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.sqrt(dx * dx + dy * dy);
-  if (len < 0.5) {
-    return;
-  }
-
-  const px = -dy / len;
-  const py = dx / len;
-
-  const main = `rgb(${color.r}, ${color.g}, ${color.b})`;
-  const shadow = darkenColor(color.r, color.g, color.b, 0.6);
-  const highlight = lightenColor(color.r, color.g, color.b, 0.35);
-
-  const offset = threadWidth * 0.25;
-  ctx.lineCap = "round";
-
-  ctx.beginPath();
-  ctx.moveTo(x1 + px * offset, y1 + py * offset);
-  ctx.lineTo(x2 + px * offset, y2 + py * offset);
-  ctx.strokeStyle = shadow;
-  ctx.lineWidth = threadWidth;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = main;
-  ctx.lineWidth = threadWidth;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(x1 - px * offset * 0.4, y1 - py * offset * 0.4);
-  ctx.lineTo(x2 - px * offset * 0.4, y2 - py * offset * 0.4);
-  ctx.strokeStyle = highlight;
-  ctx.lineWidth = threadWidth * 0.25;
-  ctx.stroke();
-};
+const SUPPORTED_FORMATS = [".dst"];
 
 function App() {
   const [tabs, setTabs] = useState<Tab[]>([
@@ -199,7 +156,6 @@ function App() {
 
   // Start window drag
   const handleStartDrag = async (e: React.MouseEvent) => {
-    // Only drag on the drag region itself, not on buttons or tabs
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest(".tab")) {
       return;
@@ -209,7 +165,6 @@ function App() {
 
   // Tab operations
   const addNewTab = useCallback(() => {
-    // Check if there's already an empty tab
     const existingEmptyTab = tabs.find((t) => t.pattern === null);
     if (existingEmptyTab) {
       setActiveTabId(existingEmptyTab.id);
@@ -237,7 +192,7 @@ function App() {
     [tabs, activeTabId, checkTabsScroll]
   );
 
-  // Render pattern to canvas
+  // Optimized pattern rendering
   const renderPattern = useCallback((pattern: Pattern) => {
     const canvas = canvasRef.current;
     if (!canvas || !pattern.bounds) {
@@ -271,25 +226,61 @@ function App() {
       "#1A1A1A";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const tx = (x: number) => (x - min_x) * scale;
-    const ty = (y: number) => (y - min_y) * scale;
+    const threadWidth = Math.max(1.5, Math.min(4.0, scale * 1.5 * 0.4));
+    const offset = threadWidth * 0.25;
 
-    const { width, minWidth, maxWidth } = config.thread;
-    const threadWidth = Math.max(minWidth, Math.min(maxWidth, scale * width * 0.4));
+    ctx.lineCap = "round";
 
     let colorIdx = 0;
     let prevX = 0;
     let prevY = 0;
     let hasStart = false;
 
-    for (const stitch of pattern.stitches) {
-      const x = tx(stitch.x);
-      const y = ty(stitch.y);
+    const stitches = pattern.stitches;
+    const len = stitches.length;
+
+    for (let i = 0; i < len; i++) {
+      const stitch = stitches[i];
+      const x = (stitch.x - min_x) * scale;
+      const y = (stitch.y - min_y) * scale;
 
       switch (stitch.command) {
         case "STITCH":
           if (hasStart) {
-            drawStitch(ctx, prevX, prevY, x, y, colorIdx, threadWidth);
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const segLen = Math.sqrt(dx * dx + dy * dy);
+
+            if (segLen >= 0.5) {
+              const px = -dy / segLen;
+              const py = dx / segLen;
+
+              const c = COLORS[colorIdx % COLORS.length];
+
+              // Shadow
+              ctx.beginPath();
+              ctx.moveTo(prevX + px * offset, prevY + py * offset);
+              ctx.lineTo(x + px * offset, y + py * offset);
+              ctx.strokeStyle = `rgb(${(c[0] * 0.6) | 0},${(c[1] * 0.6) | 0},${(c[2] * 0.6) | 0})`;
+              ctx.lineWidth = threadWidth;
+              ctx.stroke();
+
+              // Main
+              ctx.beginPath();
+              ctx.moveTo(prevX, prevY);
+              ctx.lineTo(x, y);
+              ctx.strokeStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+              ctx.lineWidth = threadWidth;
+              ctx.stroke();
+
+              // Highlight
+              ctx.beginPath();
+              ctx.moveTo(prevX - px * offset * 0.4, prevY - py * offset * 0.4);
+              ctx.lineTo(x - px * offset * 0.4, y - py * offset * 0.4);
+              ctx.strokeStyle = `rgb(${(c[0] + (255 - c[0]) * 0.35) | 0},${(c[1] + (255 - c[1]) * 0.35) | 0},${(c[2] + (255 - c[2]) * 0.35) | 0})`;
+              ctx.lineWidth = threadWidth * 0.25;
+              ctx.stroke();
+            }
           }
           prevX = x;
           prevY = y;
@@ -307,22 +298,19 @@ function App() {
           hasStart = true;
           break;
         case "END":
-          break;
-        default:
-          break;
+          return;
       }
     }
   }, []);
 
-  // Load file into current tab (replaces current tab content)
+  // Load file into current tab
   const loadFile = useCallback(
     async (filePath: string) => {
       const ext = filePath.toLowerCase().slice(filePath.lastIndexOf("."));
-      if (!(config.formats.supported as readonly string[]).includes(ext)) {
+      if (!SUPPORTED_FORMATS.includes(ext)) {
         return;
       }
 
-      // Check if file is already open in a tab
       const existingTab = tabs.find((t) => t.filePath === filePath);
       if (existingTab) {
         setActiveTabId(existingTab.id);
@@ -333,11 +321,11 @@ function App() {
       const fileName = filePath.split(/[\\/]/).pop() ?? "Untitled";
 
       try {
-        const result = await invoke<Pattern>("parse_dst_file", { path: filePath });
+        const pattern = await invoke<Pattern>("load_design", { path: filePath });
 
         setTabs((prev) =>
           prev.map((t) =>
-            t.id === activeTabId ? { ...t, name: fileName, filePath: filePath, pattern: result } : t
+            t.id === activeTabId ? { ...t, name: fileName, filePath: filePath, pattern } : t
           )
         );
       } catch (err) {
@@ -349,15 +337,14 @@ function App() {
     [activeTabId, tabs]
   );
 
-  // Load file in a new tab at specified position
+  // Load file in a new tab
   const loadFileInNewTab = useCallback(
     async (filePath: string, insertIndex?: number) => {
       const ext = filePath.toLowerCase().slice(filePath.lastIndexOf("."));
-      if (!(config.formats.supported as readonly string[]).includes(ext)) {
+      if (!SUPPORTED_FORMATS.includes(ext)) {
         return;
       }
 
-      // Check if file is already open in a tab
       const existingTab = tabs.find((t) => t.filePath === filePath);
       if (existingTab) {
         setActiveTabId(existingTab.id);
@@ -370,8 +357,8 @@ function App() {
       setIsLoading(true);
 
       try {
-        const result = await invoke<Pattern>("parse_dst_file", { path: filePath });
-        const newTab = { id: newId, name: fileName, filePath: filePath, pattern: result };
+        const pattern = await invoke<Pattern>("load_design", { path: filePath });
+        const newTab = { id: newId, name: fileName, filePath: filePath, pattern };
 
         setTabs((prev) => {
           if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= prev.length) {
@@ -419,26 +406,22 @@ function App() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+O - Open file
       if (e.ctrlKey && e.key === "o") {
         e.preventDefault();
         void handleOpenFile();
       }
-      // Ctrl+W - Close current tab
       if (e.ctrlKey && e.key === "w") {
         e.preventDefault();
         if (tabs.length > 1) {
           closeTab(activeTabId);
         }
       }
-      // Ctrl+Tab - Next tab
       if (e.ctrlKey && e.key === "Tab" && !e.shiftKey) {
         e.preventDefault();
         const currentIndex = tabs.findIndex((t) => t.id === activeTabId);
         const nextIndex = (currentIndex + 1) % tabs.length;
         setActiveTabId(tabs[nextIndex].id);
       }
-      // Ctrl+Shift+Tab - Previous tab
       if (e.ctrlKey && e.key === "Tab" && e.shiftKey) {
         e.preventDefault();
         const currentIndex = tabs.findIndex((t) => t.id === activeTabId);
@@ -455,13 +438,12 @@ function App() {
 
   // Listen for drag-drop events
   useEffect(() => {
-    const headerHeight = 57; // 6px padding + 45px header + 6px gap
-    const tabWidth = 160; // --tab-width
-    const spacing = 6; // --spacing
-    const settingsBtnWidth = 45 + spacing; // Settings button + gap
-    const tabsContainerStart = settingsBtnWidth + spacing; // Start of tabs area
+    const headerHeight = 57;
+    const tabWidth = 160;
+    const spacing = 6;
+    const settingsBtnWidth = 45 + spacing;
+    const tabsContainerStart = settingsBtnWidth + spacing;
 
-    // Calculate which tab position the cursor is over
     const calculateGhostIndex = (x: number): number => {
       const tabsContainer = tabsScrollRef.current;
       if (!tabsContainer) {
@@ -471,11 +453,9 @@ function App() {
       const scrollLeft = tabsContainer.scrollLeft;
       const relativeX = x - tabsContainerStart + scrollLeft;
 
-      // Each tab takes tabWidth + spacing
       const tabSlotWidth = tabWidth + spacing;
       const index = Math.floor((relativeX + tabSlotWidth / 2) / tabSlotWidth);
 
-      // Clamp to valid range
       return Math.max(0, Math.min(index, tabs.length));
     };
 
@@ -507,10 +487,8 @@ function App() {
         setGhostTabIndex(null);
         if (e.payload.paths?.[0]) {
           if (e.payload.position && e.payload.position.y <= headerHeight) {
-            // Dropped on header - create new tab at position
             void loadFileInNewTab(e.payload.paths[0], insertIndex ?? undefined);
           } else {
-            // Dropped on canvas - replace current tab
             void loadFile(e.payload.paths[0]);
           }
         }
@@ -518,15 +496,9 @@ function App() {
     );
 
     return () => {
-      void unlistenHover.then((fn) => {
-        fn();
-      });
-      void unlistenLeave.then((fn) => {
-        fn();
-      });
-      void unlistenDrop.then((fn) => {
-        fn();
-      });
+      void unlistenHover.then((fn) => fn());
+      void unlistenLeave.then((fn) => fn());
+      void unlistenDrop.then((fn) => fn());
     };
   }, [loadFile, loadFileInNewTab, tabs.length, ghostTabIndex]);
 
@@ -549,9 +521,7 @@ function App() {
           {showLeftArrow && (
             <button
               className="tabs-nav-btn tabs-nav-left"
-              onClick={() => {
-                scrollTabs("left");
-              }}
+              onClick={() => scrollTabs("left")}
               title="Scroll left"
             >
               <ChevronLeft size={18} />
@@ -563,19 +533,11 @@ function App() {
             ref={tabsScrollRef}
             onScroll={checkTabsScroll}
             onWheel={(e) => {
-              // Enable horizontal scrolling with both regular wheel and shift+wheel
               if (e.deltaY !== 0 || e.deltaX !== 0) {
                 if (tabsScrollRef.current) {
-                  // If shift is pressed, browser usually handles horizontal scroll,
-                  // but we want to ensure it works smoothly or force it if desired.
-                  // For "mouse-wheel only", we translate Y to X.
-
-                  // Use deltaY for horizontal scroll if shift is NOT pressed (standard vertical-to-horizontal mapping for this UI)
-                  // If shift IS pressed, deltaX is usually populated by browser, or we use deltaY if deltaX is 0.
-
                   const scrollAmount = e.deltaY !== 0 ? e.deltaY : e.deltaX;
                   tabsScrollRef.current.scrollLeft += scrollAmount;
-                  e.preventDefault(); // Prevent page scroll
+                  e.preventDefault();
                 }
               }
             }}
@@ -585,9 +547,7 @@ function App() {
               const tabContent = (
                 <div
                   className={`tab ${tab.id === activeTabId ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTabId(tab.id);
-                  }}
+                  onClick={() => setActiveTabId(tab.id)}
                   onDoubleClick={handleOpenFile}
                 >
                   <span className="tab-name">{tab.name}</span>
@@ -632,9 +592,7 @@ function App() {
           {showRightArrow && (
             <button
               className="tabs-nav-btn tabs-nav-right"
-              onClick={() => {
-                scrollTabs("right");
-              }}
+              onClick={() => scrollTabs("right")}
               title="Scroll right"
             >
               <ChevronRight size={18} />

@@ -3,10 +3,11 @@ mod dst;
 use dst::{parse_dst, Pattern};
 use std::fs;
 
-/// Tauri command to parse a DST file and return the pattern data
+/// Tauri command to load and parse a DST file
+/// This is the single entry point for loading designs - no duplicate parsing
 #[tauri::command]
-fn parse_dst_file(path: String) -> Result<Pattern, String> {
-    // Read the file
+fn load_design(path: String) -> Result<Pattern, String> {
+    // Read the file once
     let data = fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))?;
 
     // Parse the DST data
@@ -21,7 +22,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![parse_dst_file])
+        .invoke_handler(tauri::generate_handler![load_design])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
