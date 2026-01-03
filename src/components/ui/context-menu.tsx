@@ -1,3 +1,7 @@
+// context-menu.tsx - Shadcn context menu component for right-click menus
+
+"use client";
+
 import * as React from "react";
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";

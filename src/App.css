@@ -1,278 +1,343 @@
-@font-face {
-  font-family: "Sora";
-  src: url("/fonts/Sora-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+/* App.css - Main application styles with CSS variables for easy customization */
+
+/* CSS Variables */
+:root {
+  /* Layout Spacing Variables */
+  --app-spacing-xs: 2px;
+  --app-spacing-sm: 4px;
+  --app-spacing-md: 8px;
+  --app-spacing-lg: 12px;
+  --app-spacing-xl: 16px;
+  --app-spacing-2xl: 24px;
+
+  /* Component Heights */
+  --header-height: 48px;
+  --status-bar-height: 32px;
+  --tab-height: 34px;
+  --button-size: 36px;
+  --button-size-sm: 28px;
+  --button-size-xs: 32px;
+
+  /* Tab Dimensions */
+  --tab-min-width: 160px;
+  --tab-max-width: 220px;
+  --tab-padding-x: 12px;
+  --tab-gap: 8px;
+
+  /* Canvas Variables */
+  --canvas-margin: 0px;
+  --canvas-padding: 20px;
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+
+  /* Tab Colors - Light Mode */
+  --tab-bg: transparent;
+  --tab-border: var(--border);
+  --tab-hover-bg: oklch(0.95 0 0);
+  --tab-active-bg: oklch(0.9 0 0);
+  --tab-active-color: var(--foreground);
+  --tab-active-border: oklch(0.9 0 0);
 }
 
-@font-face {
-  font-family: "Sora";
-  src: url("/fonts/Sora-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  font-family:
-    "Sora",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+.dark {
+  /* Tab Colors - Dark Mode */
+  --tab-bg: transparent;
+  --tab-border: var(--border);
+  --tab-hover-bg: oklch(0.24 0 0);
+  --tab-active-bg: oklch(0.18 0 0);
+  --tab-active-color: var(--foreground);
+  --tab-active-border: oklch(0.18 0 0);
 }
 
 /* App Container */
 .app {
-  width: 100vw;
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: hsl(var(--background));
-  padding: var(--spacing-sm);
-  gap: var(--spacing-sm);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
 }
 
-/* Title Bar */
+/* Title Bar / Header */
 .title-bar {
   display: flex;
   align-items: center;
-  height: var(--btn-size);
-  gap: var(--spacing-sm);
-  background-color: hsl(var(--background));
+  height: var(--header-height);
+  min-height: var(--header-height);
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--app-spacing-sm);
+  gap: var(--app-spacing-md);
   user-select: none;
-  -webkit-user-select: none;
-  flex-shrink: 0;
+  -webkit-app-region: drag;
 }
 
+/* Title Bar Buttons */
 .title-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--btn-size);
-  height: var(--btn-size);
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--border-radius);
+  width: var(--button-size);
+  height: var(--button-size);
+  border: none;
   background: transparent;
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: all var(--transition-fast);
+  -webkit-app-region: no-drag;
   flex-shrink: 0;
 }
 
 .title-btn:hover {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 
-.title-btn.close-btn:hover {
-  background-color: hsl(var(--destructive));
-  border-color: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
+.title-btn:active {
+  transform: scale(0.95);
 }
 
-/* Tabs Wrapper */
+/* Settings Button */
+.settings-btn {
+  margin-left: var(--app-spacing-sm);
+  background: var(--muted);
+}
+
+.settings-btn:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+/* Window Close Button */
+.close-btn:hover {
+  background: var(--destructive);
+  color: white;
+}
+
+/* Minimize Button */
+.minimize-btn:hover {
+  background: var(--accent);
+}
+
+/* Window Controls */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--app-spacing-xs);
+  margin-left: auto;
+  margin-right: var(--app-spacing-sm);
+}
+
+/* Tabs System */
 .tabs-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  gap: var(--app-spacing-sm);
+  height: 100%;
 }
 
-/* Tabs Navigation Buttons */
-.tabs-nav-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: var(--btn-size);
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  transition: var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.tabs-nav-btn:hover {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
-}
-
-/* Tabs Container - scrollable */
 .tabs-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--app-spacing-md);
   flex: 1;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;
   scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: var(--app-spacing-md) var(--app-spacing-sm);
+  height: 100%;
+  scroll-behavior: smooth;
 }
 
 .tabs-container::-webkit-scrollbar {
   display: none;
 }
 
+.tabs-container.dragging {
+  background: var(--accent);
+  border-radius: var(--radius-md);
+}
+
+/* Tab Navigation Buttons */
+.tabs-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-size-sm);
+  height: var(--button-size-sm);
+  border: none;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  -webkit-app-region: no-drag;
+}
+
+.tabs-nav-btn:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Individual Tab */
 .tab {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  height: var(--btn-size);
-  min-width: var(--tab-width);
-  max-width: var(--tab-width);
-  padding: 0 var(--spacing-lg);
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--border-radius);
-  background: transparent;
-  color: hsl(var(--foreground));
+  gap: var(--tab-gap);
+  height: var(--tab-height);
+  min-width: var(--tab-min-width);
+  max-width: var(--tab-max-width);
+  padding: 0 var(--tab-padding-x);
+  background: var(--tab-bg);
+  border: 1px solid var(--tab-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--transition-fast);
-  font-size: 14px;
-  font-weight: 500;
+  transition: all var(--transition-fast);
   flex-shrink: 0;
+  -webkit-app-region: no-drag;
 }
 
 .tab:hover {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
+  background: var(--tab-hover-bg);
+  border-color: var(--tab-hover-bg);
 }
 
 .tab.active {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-  border-color: hsl(var(--primary));
+  background: var(--tab-active-bg);
+  color: var(--tab-active-color);
+  border-color: var(--tab-active-border);
 }
 
 .tab-name {
   flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .tab-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  width: 20px;
+  height: 20px;
   border: none;
-  color: hsl(var(--muted-foreground));
+  background: transparent;
+  color: inherit;
+  opacity: 0.5;
   cursor: pointer;
-  padding: 2px;
-  border-radius: var(--border-radius-xs);
-  transition: var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    opacity var(--transition-fast);
   flex-shrink: 0;
 }
 
 .tab-close:hover {
-  color: hsl(var(--destructive));
-  background-color: hsl(var(--destructive-foreground));
+  opacity: 1;
+  color: var(--destructive);
 }
 
-.add-tab-btn {
-  flex-shrink: 0;
-}
-
-/* Window Controls */
-.window-controls {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-/* Canvas Area */
-.canvas-area {
-  flex: 1;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--border-radius);
-  background-color: hsl(var(--background));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  cursor: default;
-  min-height: 0;
-}
-
-.design-canvas {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.loading-indicator {
-  color: hsl(var(--muted-foreground));
-  font-size: 14px;
-}
-
-/* Settings button specific */
-.settings-btn {
-  flex-shrink: 0;
-}
-
-/* Drag and Drop Visual Feedback */
-.canvas-area.drag-active {
-  border-color: hsl(var(--primary));
-  background-color: hsl(var(--accent));
-  box-shadow: inset 0 0 20px rgba(0, 128, 128, 0.1);
-}
-
-/* Ghost Tab for Drag Preview */
+/* Ghost Tab (Drag Preview) */
 .ghost-tab {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  height: var(--btn-size);
-  min-width: var(--tab-width);
-  max-width: var(--tab-width);
-  padding: 0 var(--spacing-lg);
-  border: 2px dashed hsl(var(--primary));
-  border-radius: var(--border-radius);
-  background-color: hsl(var(--accent));
-  color: hsl(var(--primary));
-  font-size: 14px;
-  font-weight: 500;
+  height: var(--tab-height);
+  min-width: 100px;
+  padding: 0 var(--tab-padding-x);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 2px dashed var(--ring);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.8;
   flex-shrink: 0;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: pulse-subtle 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
+@keyframes pulse-subtle {
   0%,
   100% {
-    opacity: 0.7;
+    opacity: 0.6;
   }
   50% {
     opacity: 1;
   }
 }
 
-/* Hide add button during drag */
-.tabs-container.dragging .add-tab-btn {
-  display: none;
+/* Add Tab Button */
+.add-tab-btn {
+  width: var(--button-size-xs);
+  height: var(--button-size-xs);
+  flex-shrink: 0;
+  background: var(--muted);
+}
+
+.add-tab-btn:hover {
+  background: var(--accent);
+}
+
+/* Canvas Area */
+.canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  overflow: hidden;
+  position: relative;
+  transition: background var(--transition-normal);
+  margin: var(--canvas-margin);
+  border: 1px solid var(--border);
+}
+
+.canvas-area.drag-active {
+  background: var(--accent);
+}
+
+.canvas-area.drag-active::after {
+  content: "Drop file here";
+  position: absolute;
+  inset: var(--canvas-padding);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed var(--primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary);
+  background: var(--background);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+/* Design Canvas */
+.design-canvas {
+  max-width: calc(100% - var(--canvas-padding) * 2);
+  max-height: calc(100% - var(--canvas-padding) * 2);
 }
 
 /* Empty State */
@@ -281,104 +346,135 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-lg);
-  color: hsl(var(--muted-foreground));
+  gap: var(--app-spacing-xl);
+  padding: var(--app-spacing-2xl);
   text-align: center;
-  padding: 40px;
+  max-width: 400px;
 }
 
 .empty-state-icon {
-  opacity: 0.4;
+  color: var(--muted-foreground);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 .empty-state-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: hsl(var(--foreground));
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--foreground);
 }
 
 .empty-state-subtitle {
-  font-size: 14px;
-  max-width: 300px;
+  font-size: var(--font-size-md);
+  color: var(--muted-foreground);
   line-height: 1.5;
 }
 
-.empty-state-hint {
-  font-size: 12px;
-  opacity: 0.7;
-  margin-top: var(--spacing-sm);
-}
-
-/* Loading State with Progress */
-.loading-state {
+/* Empty State Action Buttons */
+.empty-action-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--spacing-lg);
+  gap: var(--app-spacing-md);
+  padding: var(--app-spacing-md) var(--app-spacing-xl);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.progress-loader {
-  width: 200px;
+.empty-action-btn:hover {
+  background: var(--muted);
+  border-color: var(--ring);
 }
 
-.progress-bar {
-  height: 6px;
+.empty-action-btn.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
 }
 
-.loading-text {
-  color: hsl(var(--muted-foreground));
-  font-size: 14px;
-}
-
-/* Tab Close Button - Hover Red */
-.tab-close:hover {
-  color: hsl(var(--destructive));
-  background-color: transparent;
-}
-
-/* Focus States for Accessibility */
-.title-btn:focus-visible,
-.tabs-nav-btn:focus-visible,
-.tab:focus-visible,
-.tab-close:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-}
-
-.tab:focus-visible {
-  outline-offset: -2px;
+.empty-action-btn.primary:hover {
+  opacity: 0.9;
 }
 
 /* Status Bar */
 .status-bar {
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
-  padding: 0 var(--spacing-lg);
-  height: 28px;
-  background-color: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--border-radius);
-  flex-shrink: 0;
-  user-select: none;
+  height: var(--status-bar-height);
+  min-height: var(--status-bar-height);
+  padding: 0 var(--app-spacing-xl);
+  background: var(--muted);
+  border-top: 1px solid var(--border);
+  gap: var(--app-spacing-2xl);
+  font-size: var(--font-size-xs);
 }
 
 .status-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-family: "Sora", sans-serif;
-  font-size: 13px;
+  gap: var(--app-spacing-md);
 }
 
 .status-label {
-  font-weight: 700;
-  color: hsl(var(--foreground));
-  opacity: 0.8;
+  color: var(--muted-foreground);
+  font-weight: var(--font-weight-medium);
 }
 
 .status-value {
-  font-weight: 400;
-  color: hsl(var(--muted-foreground));
+  color: var(--foreground);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Focus States */
+.title-btn:focus-visible,
+.tab:focus-visible,
+.tabs-nav-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Transitions */
+* {
+  transition-property: background-color, border-color, color, opacity;
+  transition-duration: 0.15s;
+  transition-timing-function: ease;
+}
+
+/* Disable transitions for canvas */
+.design-canvas,
+.canvas-area::after {
+  transition: none;
 }

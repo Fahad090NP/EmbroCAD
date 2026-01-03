@@ -1,3 +1,5 @@
+// lib.rs - Tauri plugin setup and load_design command handler
+
 mod dst;
 
 use dst::{parse_dst, Pattern};

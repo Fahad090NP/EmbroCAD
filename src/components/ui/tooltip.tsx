@@ -1,10 +1,12 @@
+// tooltip.tsx - Shadcn tooltip component for hover information displays
+
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 import { cn } from "@/lib/utils";
 
 function TooltipProvider({
-  delayDuration = 2000,
+  delayDuration = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (

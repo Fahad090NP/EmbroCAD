@@ -1,3 +1,5 @@
+// types.rs - Data structures for embroidery patterns, stitches, and metadata
+
 use serde::Serialize;
 
 /// Represents the type of command for a stitch operation

@@ -1,3 +1,5 @@
+// theme-provider.tsx - React context provider for light/dark/system theme switching
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";

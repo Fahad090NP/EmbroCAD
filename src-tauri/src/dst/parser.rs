@@ -1,3 +1,5 @@
+// parser.rs - DST embroidery file format parser with stitch decoding
+
 use crate::dst::types::{Pattern, PatternMetadata, StitchCommand};
 use std::io::{Cursor, Read};
 

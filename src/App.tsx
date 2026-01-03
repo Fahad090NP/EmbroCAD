@@ -1,3 +1,5 @@
+// App.tsx - Main application component with embroidery viewer, tabs, and canvas rendering
+
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -15,14 +17,14 @@ import {
   ChevronRight,
   FileImage,
   FolderOpen,
-  Info,
+  Columns2,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./components/ui/tooltip";
+import { Empty } from "./components/ui/empty";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuTrigger,
   ContextMenuShortcut,
 } from "./components/ui/context-menu";
@@ -110,7 +112,7 @@ const TimeDisplay = ({ minutes }: { minutes: number }) => {
 
 function App() {
   const [tabs, setTabs] = useState<Tab[]>([
-    { id: "1", name: "Empty", filePath: null, pattern: null },
+    { id: "1", name: "Welcome", filePath: null, pattern: null },
   ]);
   const [activeTabId, setActiveTabId] = useState("1");
   const [isMaximized, setIsMaximized] = useState(false);
@@ -208,7 +210,7 @@ function App() {
     }
 
     const newId = Date.now().toString();
-    setTabs([...tabs, { id: newId, name: "Empty", filePath: null, pattern: null }]);
+    setTabs([...tabs, { id: newId, name: "Welcome", filePath: null, pattern: null }]);
     setActiveTabId(newId);
     setTimeout(checkTabsScroll, 100);
   }, [tabs, checkTabsScroll]);
@@ -680,14 +682,24 @@ function App() {
             {activeTab?.pattern ? (
               <canvas ref={canvasRef} className="design-canvas" />
             ) : (
-              <div className="empty-state">
-                <FileImage size={64} className="empty-state-icon" />
-                <span className="empty-state-title">No File Open</span>
-                <span className="empty-state-subtitle">
-                  Double-click here or drag and drop an embroidery file to get started
-                </span>
-                <span className="empty-state-hint">Supported: DST, PES, EXP, JEF, VP3</span>
-              </div>
+              <Empty
+                icon={<FileImage size={64} />}
+                title="No File Open"
+                description="Double-click here or drag and drop an embroidery file to get started"
+                className="empty-state"
+                actions={
+                  <>
+                    <button className="empty-action-btn primary" onClick={handleOpenFile}>
+                      <FolderOpen size={18} />
+                      Open File
+                    </button>
+                    <button className="empty-action-btn">
+                      <Columns2 size={18} />
+                      Compare Designs
+                    </button>
+                  </>
+                }
+              />
             )}
           </div>
         </ContextMenuTrigger>
@@ -697,71 +709,63 @@ function App() {
             Open File
             <ContextMenuShortcut>Ctrl+O</ContextMenuShortcut>
           </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem disabled>
-            <Info className="mr-2 h-4 w-4" />
-            About EmbroCAD
-          </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
 
-      {/* Status Bar */}
-      <footer className="status-bar">
-        <div className="status-item">
-          <span className="status-label">Stitches:</span>
-          <span className="status-value">
-            <NumberDisplay
-              value={
-                activeTab?.pattern?.statistics?.real_stitch_count ??
-                activeTab?.pattern?.metadata?.stitch_count ??
-                0
-              }
-            />
-          </span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">Colors:</span>
-          <span className="status-value">
-            <NumberDisplay
-              value={
-                activeTab?.pattern?.statistics?.color_change_count ??
-                activeTab?.pattern?.metadata?.color_count ??
-                0
-              }
-            />
-          </span>
-        </div>
-        <div className="status-item">
-          <span className="status-label">Time:</span>
-          <span className="status-value">
-            <TimeDisplay minutes={activeTab?.pattern?.statistics?.estimated_time_minutes ?? 0} />
-          </span>
-        </div>
-        {activeTab?.pattern?.bounds ? (
+      {/* Status Bar - Only shown when a design is loaded */}
+      {activeTab?.pattern && (
+        <footer className="status-bar">
           <div className="status-item">
-            <span className="status-label">Size:</span>
+            <span className="status-label">Stitches:</span>
             <span className="status-value">
-              {(
-                (activeTab.pattern.bounds.max_x - activeTab.pattern.bounds.min_x) *
-                0.1 *
-                0.0393701
-              ).toFixed(2)}
-              &quot; x{" "}
-              {(
-                (activeTab.pattern.bounds.max_y - activeTab.pattern.bounds.min_y) *
-                0.1 *
-                0.0393701
-              ).toFixed(2)}
-              &quot;
+              <NumberDisplay
+                value={
+                  activeTab.pattern.statistics?.real_stitch_count ??
+                  activeTab.pattern.metadata?.stitch_count ??
+                  0
+                }
+              />
             </span>
           </div>
-        ) : (
           <div className="status-item">
-            <span className="status-label">Size:</span>
-            <span className="status-value">0.00&quot; x 0.00&quot;</span>
+            <span className="status-label">Colors:</span>
+            <span className="status-value">
+              <NumberDisplay
+                value={
+                  activeTab.pattern.statistics?.color_change_count ??
+                  activeTab.pattern.metadata?.color_count ??
+                  0
+                }
+              />
+            </span>
           </div>
-        )}
-      </footer>
+          <div className="status-item">
+            <span className="status-label">Time:</span>
+            <span className="status-value">
+              <TimeDisplay minutes={activeTab.pattern.statistics?.estimated_time_minutes ?? 0} />
+            </span>
+          </div>
+          {activeTab.pattern.bounds && (
+            <div className="status-item">
+              <span className="status-label">Size:</span>
+              <span className="status-value">
+                {(
+                  (activeTab.pattern.bounds.max_x - activeTab.pattern.bounds.min_x) *
+                  0.1 *
+                  0.0393701
+                ).toFixed(2)}
+                &quot; x{" "}
+                {(
+                  (activeTab.pattern.bounds.max_y - activeTab.pattern.bounds.min_y) *
+                  0.1 *
+                  0.0393701
+                ).toFixed(2)}
+                &quot;
+              </span>
+            </div>
+          )}
+        </footer>
+      )}
     </div>
   );
 }

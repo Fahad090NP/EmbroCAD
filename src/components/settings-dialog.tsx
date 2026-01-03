@@ -1,3 +1,5 @@
+// settings-dialog.tsx - Modal dialog component for application settings
+
 import React from "react";
 import {
   Dialog,
@@ -24,9 +26,7 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="py-8 text-center text-muted-foreground">
-          <p>Settings content removed as requested.</p>
-        </div>
+        {/* Settings content will be added here */}
       </DialogContent>
     </Dialog>
   );

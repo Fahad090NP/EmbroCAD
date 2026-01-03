@@ -4,6 +4,8 @@
     "rust-lang.rust-analyzer",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "bradlc.vscode-tailwindcss"
+    "bradlc.vscode-tailwindcss",
+    "csstools.postcss",
+    "davidanson.vscode-markdownlint"
   ]
 }
